@@ -142,6 +142,8 @@ d_age2=gam(outcome~
             s(dpfunction) + te(age, glucose, bmi), 
            method = 'REML',
            family = binomial, data = df)
+
+library(gratia)
 summary(d_age2)
 draw(d_age2)
 appraise(d_age2)
