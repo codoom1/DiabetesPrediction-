@@ -8,13 +8,13 @@ diabetes <- read.csv("/Users/Owen/Important/Math/Stat_690/Project/diabetes.csv")
 
 #Convert 0's to NA
 diabetes$SkinThickness <- replace(diabetes$SkinThickness, diabetes$SkinThickness == 0, NA)
-diabetes$Pregnancies <- replace(diabetes$Pregnancies, diabetes$Pregnancies == 0, NA)
+#diabetes$Pregnancies <- replace(diabetes$Pregnancies, diabetes$Pregnancies == 0, NA)
 diabetes$Insulin <- replace(diabetes$Insulin, diabetes$Insulin == 0, NA)
 diabetes$BloodPressure <- replace(diabetes$BloodPressure, diabetes$BloodPressure == 0, NA)
 diabetes$Glucose <- replace(diabetes$Glucose, diabetes$Glucose ==0, NA)
 diabetes$BMI <- replace(diabetes$BMI, diabetes$BMI == 0, NA)
 
-
+dim(diabetes)
 #Check the Missingness Pattern
 md.pattern(diabetes)
 
@@ -30,30 +30,20 @@ histogram(~BMI | skin.thickness.na, data = diabetes)
 histogram(~Glucose | skin.thickness.na, data = diabetes)
 
 
-
-
-
-
-#POSSIBLE TO DELETE THIS
-#Get only the predictors for the MICE package
-#diabetes.predictors <- diabetes[c(1:8)]
-
 #See the base predictor matrix from MICE
 test.mice <- mice(diabetes, maxit = 0, print = F)
 pred.mat <- test.mice$pred
 
 #Remove Insulin, Skin Thickness, and Insulin from being used as predictors on each other in MICE
-pred.mat[, c("Pregnancies", "SkinThickness", "Insulin", "Outcome")] <- 0
+pred.mat[, c("Outcome")] <- 0
 
 #Use Mice Package with the new prediction matrix to impute for SkinThickness, Pregnancies, and Insulins
 pmm.imp <- mice(diabetes, predictorMatrix = pred.mat, seed = 123)
 
+
 #Check the summary and the plot
 summary(pmm.imp)
 plot(pmm.imp)
-
-# Check the datasets
-c.long <- complete(pmm.imp,1)
 
 # Increase the number of chains by 35 to confirm convergence
 imp40 <- mice.mids(pmm.imp, maxit = 35, print = F)
@@ -66,8 +56,10 @@ stripplot(pmm.imp, SkinThickness ~ .imp)
 stripplot(pmm.imp, Insulin ~ .imp)
 
 
+
+
 #Create model 1
-pmm.mod=with(pmm.imp,gam(Outcome~ Age +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
+pmm.mod=with(pmm.imp,gam(Outcome~ s(Age) +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
            s(SkinThickness)+ s(BloodPressure)+s(Pregnancies), family = binomial))
 
 # Pool the the results together
@@ -77,12 +69,10 @@ pool.pmm
 summary(pool.pmm)
 
 
-#Use complete to check the new
-
 # Attempt to pool the results ourselves
 # See https://stats.stackexchange.com/questions/100245/how-to-summarize-gam-model-result-from-multiple-imputation-data-in-r
 
-#Get all the Coeffcients 
+#Get all the Coefficients 
 beta.hat <- pmm.mod$analyses[[1]]$coefficients
 
 reps = 5
@@ -139,3 +129,29 @@ pooled.mod$df.residuals <- df.r
 
 #Get Summary of model
 summary(pooled.mod)
+
+# Get the 5 datasets
+data1 <- complete(pmm.imp,1)
+data2 <- complete(pmm.imp,2)
+data3 <- complete(pmm.imp,3)
+data4 <- complete(pmm.imp,4)
+data5 <- complete(pmm.imp,5)
+
+# Fit the model for all 5
+mod1 <- gam(Outcome~ s(Age) +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
+      s(SkinThickness)+ s(BloodPressure)+s(Pregnancies), family = binomial, data = data1)
+mod2 <- gam(Outcome~ s(Age) +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
+              s(SkinThickness)+ s(BloodPressure)+s(Pregnancies), family = binomial, data = data2)
+mod3 <- gam(Outcome~ s(Age) +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
+              s(SkinThickness)+ s(BloodPressure)+s(Pregnancies), family = binomial, data = data3)
+mod4 <- gam(Outcome~ s(Age) +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
+              s(SkinThickness)+ s(BloodPressure)+s(Pregnancies), family = binomial, data = data4)
+mod5 <- gam(Outcome~ s(Age) +s(DiabetesPedigreeFunction)+s(Glucose)+ s(BMI)+ s(Insulin)+
+              s(SkinThickness)+ s(BloodPressure)+s(Pregnancies), family = binomial, data = data5)
+
+#Summary of all 5
+summary(mod1)
+summary(mod2)
+summary(mod3)
+summary(mod4)
+summary(mod5)
