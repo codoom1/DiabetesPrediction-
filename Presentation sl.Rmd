@@ -113,6 +113,9 @@ based on certain diagnostic measurements. In total, the data contains 8 variable
 
 
 
+
+
+
 ## Modeling Workflow 
 
 ```{r, echo=FALSE, message=FALSE,warning=FALSE,fig.height=9, fig.width=11,fig.align='center'}
@@ -124,9 +127,9 @@ grViz("
     edge [fontname = arial, fontsize = 9]
     
     Data [label = 'Original Data Set\n768 Observations\n8 variables']
-    WithoutMissingValues [label = 'Mice imputed Data set\n(No Missing Values)']
+    WithoutMissingValues [label = 'MICE (Multivariate Imputation by Chained Equations)\nMethod:PMM\n(No Missing Values)']
     
-    SP [label = 'Spline Models']
+    SP [label = 'Spline Model']
     ML [label = 'Machine Learning Models']
   
     TP [label = 'GAM fits and \nTensor Product (Trivariate fits)']
@@ -164,19 +167,20 @@ grViz("
 ```
 
 
+
 ## Methodology
 
-- GAMs
+- **GAMs**
 
-  - Tensor Product (Trivariate fits)
+- **Tensor Product (Trivariate fits)**
   
-- Random Forest (RF)
+- **Random Forest (RF)**: This is a machine-learning algorithm that builds multiple decision trees and combines them to obtain a more accurate prediction. It is used for classification and regression problems.
 
-- Naive Bayes (NB)
+- **Naive Bayes (NB)**: This is a classification algorithm based on Bayes' theorem. It assumes that the predictors are independent of each other and calculates the probability of each class based on the predictor values.
 
-- Stochastic Gradient Boost (SGB)
+- **Stochastic Gradient Boost (SGB)**: This is a machine learning algorithm that builds an ensemble of weak prediction models (e.g. decision trees) and sequentially trains them to correct the errors of the previous model. The final prediction is based on the weighted average of all the models.
 
-- K-Nearest Neighbors Algorithm (KNN)
+- **K-Nearest Neighbors Algorithm (KNN)**: This is a non-parametric classification algorithm that assigns a new data point to the class of the majority of its k-nearest neighbors in the training set.
 
 
 ## Descriptive Analysis
