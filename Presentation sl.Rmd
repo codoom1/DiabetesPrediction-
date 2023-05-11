@@ -1,10 +1,11 @@
 ---
 title: "Exploring the relationship between Diabetes and its Risk Factors using Generalized Additive Models (GAMs)"
-author: "Christopher Oddom, Denis Folitse, Sandani Kumanayake, Owen Gallagher"
+author: "Christopher Odoom, Denis Folitse, Sandani Kumanayake, Owen Gallagher"
 date: "`r Sys.Date()`"
 output:
   slidy_presentation:
   beamer_presentation:
+    theme: 
     colortheme: "dolphin"
     fonttheme: "structurebold"
 
@@ -107,6 +108,60 @@ based on certain diagnostic measurements. In total, the data contains 8 variable
 
 - ***bmi:*** indicates the body mass index in kg/m2
 
+
+
+
+
+
+## Modeling Workflow 
+
+```{r, echo=FALSE, message=FALSE,warning=FALSE,fig.height=9, fig.width=11,fig.align='center'}
+library(DiagrammeR)
+
+grViz("
+  digraph flowchart {
+    node [fontname = arial, shape = box, style = filled, fillcolor = lightblue, margin = 0.15, fontsize = 10]
+    edge [fontname = arial, fontsize = 9]
+    
+    Data [label = 'Original Data Set\n768 Observations\n8 variables']
+    WithoutMissingValues [label = 'Mice imputed Data set\n(No Missing Values)']
+    
+    SP [label = 'Spline Models']
+    ML [label = 'Machine Learning Models']
+  
+    TP [label = 'GAM fits and \nTensor Product (Trivariate fits)']
+    RF [label = 'Random Forest (RF)']
+    NB [label = 'Naive Bayes (NB)']
+    SGB [label = 'Stochastic Gradient Boost\n(SGB)']
+    KNN [label = 'K-Nearest Neighbors Algorithm\n(KNN)']
+    
+    
+    Prediction [label = 'Model Prediction']
+    ModelPrediction [label = 'Model Evaluation\nMetric: Misclassification']
+    
+    Data -> WithoutMissingValues
+    WithoutMissingValues -> SP
+    WithoutMissingValues -> ML
+    
+    SP -> TP
+    
+    ML -> RF
+    ML -> NB
+    ML -> SGB
+    ML -> KNN
+    
+    TP -> Prediction
+    RF -> Prediction
+    NB -> Prediction
+    SGB -> Prediction
+    KNN -> Prediction
+    
+    Prediction -> ModelPrediction
+    
+  }
+")
+
+```
 
 
 ## Methodology
@@ -277,12 +332,12 @@ ggcorrplot(corr_matrix, type = "upper", hc.order = TRUE, lab = TRUE)
 
 ## Model Fit | GAMs splines {.smaller}
 
-
 ```{r,warning=FALSE,message=FALSE}
 diabetes=imputed_data
 setwd("/Users/sedem/Development/project/Diabetes ")
 
 shiny::shinyAppFile("app.R")
+
 ```
 
 
@@ -439,6 +494,8 @@ randf <- caret::train(outcome ~ ., data = TrainSet, method = "rf",
 
 plot(varImp(randf))
 
+
+
 ```
 
 
@@ -452,6 +509,7 @@ tab.rf<- cbind(tab.rf, c( tab.rf[1,2]/(tab.rf[1,1]+tab.rf[1,2]),
                           tab.rf[2,1]/(tab.rf[2,1]+tab.rf[2,2])))
 colnames(tab.rf) <- c('diabetic', 'non_diabetic', 'misclassification')
 
+
 ```
 
 
@@ -459,7 +517,7 @@ colnames(tab.rf) <- c('diabetic', 'non_diabetic', 'misclassification')
 
 ```{r,warning=FALSE,message=FALSE}
 #Naive Bayes
-nav <- caret::train(outcome ~., data = TrainSet, method ="naive_bayes"  , 
+nav <- caret::train(as.factor(outcome) ~., data = TrainSet, method ="nb"  , 
                     trControl = fitControl, metric = "ROC")
 
 #nav
@@ -472,6 +530,7 @@ tab.nav<-table(factor(TestSet$outcome), pred.nav)
 tab.nav<- cbind(tab.nav, c( tab.nav[1,2]/(tab.nav[1,1]+tab.nav[1,2]), 
                             tab.nav[2,1]/(tab.nav[2,1]+tab.nav[2,2])))
 colnames(tab.nav) <- c('diabetic', 'non_diabetic', 'misclassification')
+
 
 
 ```
@@ -533,8 +592,12 @@ kable(tabb, table.attr = 'style="width:80%; height:500px; overflow-y:scroll;"')
 
 
 
+## Further Studies
+
+- Study the influence of different methods of Multiple Imputations by chained equations (mice) on the GAMs result.
 
 
+- Pool results from GAM fits on multiple mice-imputed dataset 
 
 
 
